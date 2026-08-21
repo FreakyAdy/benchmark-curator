@@ -2,13 +2,8 @@
 
 import hashlib
 import json
-from collections import Counter
-from pathlib import Path
-from typing import Optional
 
 import tiktoken
-
-from .download import download_benchmark, download_from_file, download_from_url
 
 
 def _normalize_text(text: str) -> str:
@@ -16,7 +11,7 @@ def _normalize_text(text: str) -> str:
     return " ".join(text.strip().lower().split())
 
 
-def _record_hash(record: dict, fields: Optional[list[str]] = None) -> str:
+def _record_hash(record: dict, fields: list[str] | None = None) -> str:
     """Compute hash of a record for deduplication."""
     if fields:
         content = "".join(str(record.get(f, "")) for f in fields)
@@ -27,7 +22,7 @@ def _record_hash(record: dict, fields: Optional[list[str]] = None) -> str:
 
 def deduplicate_exact(
     records: list[dict],
-    fields: Optional[list[str]] = None,
+    fields: list[str] | None = None,
 ) -> list[dict]:
     """
     Remove exact duplicates from records.
@@ -72,24 +67,24 @@ def deduplicate_fuzzy(
     def get_ngrams(text: str, n: int = 3) -> set[str]:
         text = _normalize_text(text)
         return {text[i:i+n] for i in range(len(text) - n + 1)}
-    
+
     def jaccard(a: set[str], b: set[str]) -> float:
         if not a and not b:
             return 1.0
         if not a or not b:
             return 0.0
         return len(a & b) / len(a | b)
-    
+
     result = []
     signatures = []  # List of (input_ngrams, expected_ngrams)
-    
+
     for record in records:
         input_text = str(record.get(input_field, ""))
         expected_text = str(record.get(expected_field, ""))
-        
+
         input_ngrams = get_ngrams(input_text)
         expected_ngrams = get_ngrams(expected_text)
-        
+
         is_duplicate = False
         for sig_in, sig_exp in signatures:
             sim_in = jaccard(input_ngrams, sig_in)
@@ -97,11 +92,11 @@ def deduplicate_fuzzy(
             if sim_in >= threshold and sim_exp >= threshold:
                 is_duplicate = True
                 break
-        
+
         if not is_duplicate:
             result.append(record)
             signatures.append((input_ngrams, expected_ngrams))
-    
+
     return result
 
 
@@ -109,7 +104,7 @@ def filter_by_length(
     records: list[dict],
     input_field: str,
     min_tokens: int = 0,
-    max_tokens: Optional[int] = None,
+    max_tokens: int | None = None,
     encoding: str = "cl100k_base",
 ) -> list[dict]:
     """
@@ -126,7 +121,7 @@ def filter_by_length(
         Filtered records
     """
     enc = tiktoken.get_encoding(encoding)
-    
+
     result = []
     for record in records:
         text = str(record.get(input_field, ""))
@@ -173,8 +168,8 @@ def clean_pipeline(
     dedupe_fuzzy: bool = False,
     fuzzy_threshold: float = 0.95,
     min_tokens: int = 0,
-    max_tokens: Optional[int] = None,
-    fuzzy_fields: Optional[list[str]] = None,
+    max_tokens: int | None = None,
+    fuzzy_fields: list[str] | None = None,
 ) -> list[dict]:
     """
     Run the full cleaning pipeline on records.
@@ -196,16 +191,16 @@ def clean_pipeline(
     # Exact deduplication first
     if dedupe_exact:
         records = deduplicate_exact(records, fields=fuzzy_fields)
-    
+
     # Fuzzy deduplication
     if dedupe_fuzzy:
         records = deduplicate_fuzzy(records, input_field, expected_field, fuzzy_threshold)
-    
+
     # Length filtering
     if min_tokens > 0 or max_tokens is not None:
         records = filter_by_length(records, input_field, min_tokens, max_tokens)
-    
+
     # Normalize fields
     records = normalize_fields(records, input_field, expected_field)
-    
+
     return records

@@ -1,22 +1,19 @@
 """Download benchmarks from Hugging Face Hub, local files, or URLs."""
 
 import json
-import os
 from pathlib import Path
-from typing import Optional
 
 from datasets import load_dataset
-from huggingface_hub import hf_hub_download
 
 from .registry import BenchmarkConfig, get_benchmark
 
 
 def download_benchmark(
     benchmark: str | BenchmarkConfig,
-    split: Optional[str] = None,
-    output: Optional[str] = None,
-    config: Optional[str] = None,
-    hf_token: Optional[str] = None,
+    split: str | None = None,
+    output: str | None = None,
+    config: str | None = None,
+    hf_token: str | None = None,
 ) -> list[dict]:
     """
     Download a benchmark dataset and return as list of dicts.
@@ -35,15 +32,15 @@ def download_benchmark(
         bench_config = get_benchmark(benchmark)
     else:
         bench_config = benchmark
-    
+
     # Resolve split
     split = split or bench_config.default_split
     if split not in bench_config.splits:
         raise ValueError(f"Split '{split}' not available for {bench_config.name}. Available: {bench_config.splits}")
-    
+
     # Resolve config
     config = config or bench_config.config
-    
+
     # Load from HF Hub
     ds = load_dataset(
         bench_config.hf_dataset,
@@ -51,9 +48,9 @@ def download_benchmark(
         split=split,
         token=hf_token,
     )
-    
+
     records = ds.to_list()
-    
+
     # Save to output if requested
     if output:
         output_path = Path(output)
@@ -61,7 +58,7 @@ def download_benchmark(
         with output_path.open("w", encoding="utf-8") as f:
             for record in records:
                 f.write(json.dumps(record, ensure_ascii=False) + "\n")
-    
+
     return records
 
 
@@ -84,9 +81,9 @@ def download_from_file(
     path_obj = Path(path)
     if not path_obj.exists():
         raise FileNotFoundError(f"File not found: {path}")
-    
+
     suffix = path_obj.suffix.lower()
-    
+
     if suffix == ".jsonl":
         records = []
         with path_obj.open("r", encoding="utf-8") as f:
@@ -107,7 +104,7 @@ def download_from_file(
                 records.append(row)
     else:
         raise ValueError(f"Unsupported file format: {suffix}. Use .jsonl, .json, or .csv")
-    
+
     return records
 
 
@@ -118,20 +115,24 @@ def download_from_url(
 ) -> list[dict]:
     """
     Download benchmark from a URL (JSONL, JSON, or CSV).
-    
+
     Args:
         url: URL to download from
         input_field: Field name for input/prompt
         expected_field: Field name for expected output
-    
+
     Returns:
         List of normalized records
     """
     import urllib.request
-    
+
+    # Check extension first (before network call)
+    if not (url.endswith(".jsonl") or url.endswith(".json") or url.endswith(".csv")):
+        raise ValueError("URL must end with .jsonl, .json, or .csv")
+
     with urllib.request.urlopen(url) as response:
         content = response.read().decode("utf-8")
-    
+
     if url.endswith(".jsonl"):
         records = []
         for line in content.strip().split("\n"):
@@ -147,7 +148,5 @@ def download_from_url(
         reader = csv.DictReader(io.StringIO(content))
         for row in reader:
             records.append(row)
-    else:
-        raise ValueError("URL must end with .jsonl, .json, or .csv")
-    
+
     return records

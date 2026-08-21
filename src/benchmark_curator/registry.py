@@ -1,7 +1,6 @@
 """Benchmark registry with built-in benchmark definitions."""
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -12,7 +11,7 @@ class BenchmarkConfig:
     splits: tuple[str, ...]
     input_field: str
     expected_field: str
-    config: Optional[str] = None
+    config: str | None = None
     description: str = ""
     default_split: str = field(default="test")
 

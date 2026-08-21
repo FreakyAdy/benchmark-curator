@@ -27,7 +27,6 @@ dependencies = [
     "pyyaml>=6.0",
     "tiktoken>=0.5.0",
 ]
-dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
@@ -39,9 +38,6 @@ dev = [
 
 [project.scripts]
 benchmark-curator = "benchmark_curator.cli:app"
-
-[tool.hatch.version]
-source = "src/benchmark_curator/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/benchmark_curator"]

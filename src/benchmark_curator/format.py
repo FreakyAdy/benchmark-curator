@@ -2,7 +2,6 @@
 
 import json
 from pathlib import Path
-from typing import Optional
 
 from huggingface_hub import HfApi
 
@@ -27,7 +26,7 @@ def export_jsonl(
     """
     output_path = Path(output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     count = 0
     with output_path.open("w", encoding="utf-8") as f:
         for record in records:
@@ -44,7 +43,7 @@ def export_jsonl(
                     out_record[k] = v
             f.write(json.dumps(out_record, ensure_ascii=False) + "\n")
             count += 1
-    
+
     return count
 
 
@@ -52,7 +51,7 @@ def push_to_hub(
     records: list[dict],
     repo_id: str,
     split: str = "train",
-    token: Optional[str] = None,
+    token: str | None = None,
     private: bool = False,
 ) -> str:
     """
@@ -69,10 +68,10 @@ def push_to_hub(
         URL of the created dataset
     """
     from datasets import Dataset
-    
+
     ds = Dataset.from_list(records)
     ds.push_to_hub(repo_id, split=split, token=token, private=private)
-    
+
     api = HfApi()
     return f"https://huggingface.co/datasets/{repo_id}"
 
