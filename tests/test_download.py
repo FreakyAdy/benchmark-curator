@@ -34,9 +34,7 @@ class TestDownloadBenchmark:
         records = download_benchmark(bench_config, split="test")
         assert len(records) == 2
         assert records[0]["question"] == "What is 2+2?"
-        mock_load_dataset.assert_called_once_with(
-            "org/test", name=None, split="test", token=None
-        )
+        mock_load_dataset.assert_called_once_with("org/test", name=None, split="test", token=None)
 
     @patch("benchmark_curator.download.load_dataset")
     def test_download_benchmark_with_config(self, mock_load_dataset):
@@ -53,8 +51,7 @@ class TestDownloadBenchmark:
             config="my_config",
             default_split="test",
         )
-
-        records = download_benchmark(bench_config, config="my_config")
+        download_benchmark(bench_config, config="my_config")
         mock_load_dataset.assert_called_once_with(
             "org/test", name="my_config", split="test", token=None
         )
@@ -70,7 +67,7 @@ class TestDownloadBenchmark:
             default_split="test",
         )
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="not available") as exc_info:
             download_benchmark(bench_config, split="invalid")
         assert "not available" in str(exc_info.value)
 
@@ -90,7 +87,7 @@ class TestDownloadBenchmark:
         )
 
         output_file = tmp_path / "output.jsonl"
-        records = download_benchmark(bench_config, output=str(output_file))
+        download_benchmark(bench_config, output=str(output_file))
 
         assert output_file.exists()
         content = output_file.read_text()
@@ -101,7 +98,9 @@ class TestDownloadBenchmark:
 class TestDownloadFromFile:
     def test_download_from_jsonl(self, tmp_path):
         file_path = tmp_path / "test.jsonl"
-        file_path.write_text('{"question": "Q1", "answer": "A1"}\n{"question": "Q2", "answer": "A2"}\n')
+        file_path.write_text(
+            '{"question": "Q1", "answer": "A1"}\n{"question": "Q2", "answer": "A2"}\n'
+        )
 
         records = download_from_file(str(file_path), "question", "answer")
         assert len(records) == 2
@@ -131,7 +130,7 @@ class TestDownloadFromFile:
         file_path = tmp_path / "test.txt"
         file_path.write_text("plain text")
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="Unsupported file format") as exc_info:
             download_from_file(str(file_path), "q", "a")
         assert "Unsupported file format" in str(exc_info.value)
 
@@ -140,7 +139,9 @@ class TestDownloadFromUrl:
     @patch("urllib.request.urlopen")
     def test_download_from_jsonl_url(self, mock_urlopen):
         mock_response = MagicMock()
-        mock_response.read.return_value = b'{"question": "Q1", "answer": "A1"}\n{"question": "Q2", "answer": "A2"}'
+        mock_response.read.return_value = (
+            b'{"question": "Q1", "answer": "A1"}\n{"question": "Q2", "answer": "A2"}'
+        )
         mock_response.__enter__.return_value = mock_response
         mock_urlopen.return_value = mock_response
 
@@ -168,13 +169,14 @@ class TestDownloadFromUrl:
         assert len(records) == 2
 
     def test_download_from_invalid_extension_raises(self):
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="URL must end with") as exc_info:
             download_from_url("http://example.com/data.txt", "q", "a")
         assert "URL must end with" in str(exc_info.value)
 
     @patch("urllib.request.urlopen")
     def test_download_from_url_http_error(self, mock_urlopen):
         import urllib.error
+
         mock_urlopen.side_effect = urllib.error.HTTPError(
             "http://example.com/data.jsonl", 404, "Not Found", {}, None
         )

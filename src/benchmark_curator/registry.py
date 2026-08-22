@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class BenchmarkConfig:
     """Configuration for a benchmark dataset."""
+
     name: str
     hf_dataset: str
     splits: tuple[str, ...]

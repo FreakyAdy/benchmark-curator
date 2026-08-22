@@ -17,14 +17,14 @@ def download_benchmark(
 ) -> list[dict]:
     """
     Download a benchmark dataset and return as list of dicts.
-    
+
     Args:
         benchmark: Benchmark name (str) or BenchmarkConfig
         split: Dataset split to download (overrides default)
         output: Optional path to save raw JSONL
         config: Dataset config name (for multi-config datasets)
         hf_token: Optional HF token for private datasets
-    
+
     Returns:
         List of dataset records as dicts
     """
@@ -36,7 +36,9 @@ def download_benchmark(
     # Resolve split
     split = split or bench_config.default_split
     if split not in bench_config.splits:
-        raise ValueError(f"Split '{split}' not available for {bench_config.name}. Available: {bench_config.splits}")
+        raise ValueError(
+            f"Split '{split}' not available for {bench_config.name}. Available: {bench_config.splits}"
+        )
 
     # Resolve config
     config = config or bench_config.config
@@ -69,12 +71,12 @@ def download_from_file(
 ) -> list[dict]:
     """
     Load benchmark from a local file (JSONL, JSON, or CSV).
-    
+
     Args:
         path: Path to local file
         input_field: Field name for input/prompt
         expected_field: Field name for expected output
-    
+
     Returns:
         List of normalized records
     """
@@ -97,6 +99,7 @@ def download_from_file(
             records = data if isinstance(data, list) else [data]
     elif suffix == ".csv":
         import csv
+
         records = []
         with path_obj.open("r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -144,6 +147,7 @@ def download_from_url(
     elif url.endswith(".csv"):
         import csv
         import io
+
         records = []
         reader = csv.DictReader(io.StringIO(content))
         for row in reader:

@@ -84,7 +84,7 @@ class TestGetBenchmark:
         assert bench.name == "mmlu"
 
     def test_get_unknown_benchmark_raises(self):
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="Unknown benchmark") as exc_info:
             get_benchmark("unknown")
         assert "Unknown benchmark" in str(exc_info.value)
         assert "mmlu" in str(exc_info.value)

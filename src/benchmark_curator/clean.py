@@ -26,11 +26,11 @@ def deduplicate_exact(
 ) -> list[dict]:
     """
     Remove exact duplicates from records.
-    
+
     Args:
         records: List of records
         fields: Optional fields to use for deduplication (default: all fields)
-    
+
     Returns:
         Deduplicated records (preserves first occurrence order)
     """
@@ -52,21 +52,22 @@ def deduplicate_fuzzy(
 ) -> list[dict]:
     """
     Remove fuzzy duplicates based on text similarity.
-    
+
     Uses a simple n-gram Jaccard similarity on normalized text.
-    
+
     Args:
         records: List of records
         input_field: Field containing input text
         expected_field: Field containing expected output
         threshold: Similarity threshold (0-1), higher = more aggressive
-    
+
     Returns:
         Deduplicated records
     """
+
     def get_ngrams(text: str, n: int = 3) -> set[str]:
         text = _normalize_text(text)
-        return {text[i:i+n] for i in range(len(text) - n + 1)}
+        return {text[i : i + n] for i in range(len(text) - n + 1)}
 
     def jaccard(a: set[str], b: set[str]) -> float:
         if not a and not b:
@@ -109,14 +110,14 @@ def filter_by_length(
 ) -> list[dict]:
     """
     Filter records by token length of input field.
-    
+
     Args:
         records: List of records
         input_field: Field containing input text
         min_tokens: Minimum token count (inclusive)
         max_tokens: Maximum token count (inclusive), None = no limit
         encoding: tiktoken encoding name
-    
+
     Returns:
         Filtered records
     """
@@ -140,14 +141,14 @@ def normalize_fields(
 ) -> list[dict]:
     """
     Normalize record fields to standard input/expected schema.
-    
+
     Args:
         records: List of records
         input_field: Source field for input
         expected_field: Source field for expected output
         output_input_field: Target field name for input
         output_expected_field: Target field name for expected output
-    
+
     Returns:
         Records with normalized fields
     """
@@ -173,7 +174,7 @@ def clean_pipeline(
 ) -> list[dict]:
     """
     Run the full cleaning pipeline on records.
-    
+
     Args:
         records: Input records
         input_field: Input field name
@@ -184,7 +185,7 @@ def clean_pipeline(
         min_tokens: Minimum token length
         max_tokens: Maximum token length
         fuzzy_fields: Fields to use for fuzzy dedupe (default: input+expected)
-    
+
     Returns:
         Cleaned records
     """

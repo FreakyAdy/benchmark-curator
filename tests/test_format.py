@@ -45,7 +45,9 @@ class TestExportJsonl:
             {"question": "Q1", "answer": "A1"},
         ]
         output_file = tmp_path / "output.jsonl"
-        count = export_jsonl(records, str(output_file), input_field="question", expected_field="answer")
+        count = export_jsonl(
+            records, str(output_file), input_field="question", expected_field="answer"
+        )
 
         assert count == 1
         data = json.loads(output_file.read_text())
@@ -82,7 +84,9 @@ class TestExportJsonl:
 class TestLoadJsonl:
     def test_load_jsonl_basic(self, tmp_path):
         file_path = tmp_path / "input.jsonl"
-        file_path.write_text('{"input": "Q1", "expected": "A1"}\n{"input": "Q2", "expected": "A2"}\n')
+        file_path.write_text(
+            '{"input": "Q1", "expected": "A1"}\n{"input": "Q2", "expected": "A2"}\n'
+        )
 
         records = load_jsonl(str(file_path))
         assert len(records) == 2
@@ -106,13 +110,9 @@ class TestLoadJsonl:
 
 class TestPushToHub:
     @patch("datasets.Dataset")
-    @patch("benchmark_curator.format.HfApi")
-    def test_push_to_hub(self, mock_hf_api, mock_dataset):
+    def test_push_to_hub(self, mock_dataset):
         mock_ds_instance = MagicMock()
         mock_dataset.from_list.return_value = mock_ds_instance
-
-        mock_api_instance = MagicMock()
-        mock_hf_api.return_value = mock_api_instance
 
         records = [{"input": "Q1", "expected": "A1"}]
         url = push_to_hub(records, "user/dataset", split="train", private=True)

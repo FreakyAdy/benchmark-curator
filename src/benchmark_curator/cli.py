@@ -1,6 +1,5 @@
 """CLI for benchmark-curator."""
 
-
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -67,7 +66,7 @@ def info(
         bench = get_benchmark(benchmark)
     except ValueError as e:
         console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     console.print(f"\n[bold cyan]{bench.name}[/bold cyan]")
     console.print(f"  HF Dataset: {bench.hf_dataset}")
@@ -81,18 +80,30 @@ def info(
 
 @app.command()
 def download(
-    benchmark: str = typer.Argument(..., help="Benchmark name (built-in) or 'file'/'url' for custom"),
-    split: str | None = typer.Option(None, "--split", "-s", help="Dataset split (overrides default)"),
+    benchmark: str = typer.Argument(
+        ..., help="Benchmark name (built-in) or 'file'/'url' for custom"
+    ),
+    split: str | None = typer.Option(
+        None, "--split", "-s", help="Dataset split (overrides default)"
+    ),
     output: str | None = typer.Option(None, "--output", "-o", help="Output JSONL file path"),
-    config: str | None = typer.Option(None, "--config", "-c", help="Dataset config (for multi-config datasets)"),
+    config: str | None = typer.Option(
+        None, "--config", "-c", help="Dataset config (for multi-config datasets)"
+    ),
     hf_token: str | None = typer.Option(None, "--hf-token", help="HF token for private datasets"),
-    input_field: str | None = typer.Option(None, "--input-field", help="Input field (for file/url)"),
-    expected_field: str | None = typer.Option(None, "--expected-field", help="Expected field (for file/url)"),
+    input_field: str | None = typer.Option(
+        None, "--input-field", help="Input field (for file/url)"
+    ),
+    expected_field: str | None = typer.Option(
+        None, "--expected-field", help="Expected field (for file/url)"
+    ),
 ) -> None:
     """Download a benchmark dataset from HF Hub, local file, or URL."""
     if benchmark == "file":
         if not input_field or not expected_field:
-            console.print("[red]Error: --input-field and --expected-field required for file download[/red]")
+            console.print(
+                "[red]Error: --input-field and --expected-field required for file download[/red]"
+            )
             raise typer.Exit(1)
         # This would need a file path argument - simplified for now
         console.print("[yellow]File download not fully implemented in this scaffold[/yellow]")
@@ -100,7 +111,9 @@ def download(
 
     if benchmark == "url":
         if not input_field or not expected_field:
-            console.print("[red]Error: --input-field and --expected-field required for URL download[/red]")
+            console.print(
+                "[red]Error: --input-field and --expected-field required for URL download[/red]"
+            )
             raise typer.Exit(1)
         console.print("[yellow]URL download not fully implemented in this scaffold[/yellow]")
         return
@@ -110,12 +123,14 @@ def download(
         bench_config = get_benchmark(benchmark)
     except ValueError as e:
         console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     resolved_split = split or bench_config.default_split
     resolved_config = config or bench_config.config
 
-    console.print(f"Downloading [cyan]{bench_config.name}[/cyan] (split: {resolved_split}, config: {resolved_config})...")
+    console.print(
+        f"Downloading [cyan]{bench_config.name}[/cyan] (split: {resolved_split}, config: {resolved_config})..."
+    )
 
     try:
         records = download_benchmark(
@@ -130,7 +145,7 @@ def download(
             console.print(f"  Saved to: {output}")
     except Exception as e:
         console.print(f"[red]Error downloading: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @app.command()
@@ -139,9 +154,15 @@ def clean(
     output: str = typer.Option(..., "--output", "-o", help="Output JSONL file"),
     input_field: str = typer.Option("question", "--input-field", help="Input field name"),
     expected_field: str = typer.Option("answer", "--expected-field", help="Expected field name"),
-    dedupe_exact: bool = typer.Option(True, "--dedupe/--no-dedupe", help="Enable exact deduplication"),
-    dedupe_fuzzy: bool = typer.Option(False, "--fuzzy/--no-fuzzy", help="Enable fuzzy deduplication"),
-    fuzzy_threshold: float = typer.Option(0.95, "--fuzzy-threshold", help="Fuzzy similarity threshold (0-1)"),
+    dedupe_exact: bool = typer.Option(
+        True, "--dedupe/--no-dedupe", help="Enable exact deduplication"
+    ),
+    dedupe_fuzzy: bool = typer.Option(
+        False, "--fuzzy/--no-fuzzy", help="Enable fuzzy deduplication"
+    ),
+    fuzzy_threshold: float = typer.Option(
+        0.95, "--fuzzy-threshold", help="Fuzzy similarity threshold (0-1)"
+    ),
     min_tokens: int = typer.Option(0, "--min-tokens", help="Minimum token count"),
     max_tokens: int | None = typer.Option(None, "--max-tokens", help="Maximum token count"),
 ) -> None:
@@ -173,10 +194,16 @@ def clean(
 def format(
     input_file: str = typer.Argument(..., help="Input JSONL file (cleaned)"),
     output: str = typer.Option(..., "--output", "-o", help="Output JSONL file"),
-    input_field: str = typer.Option("input", "--input-field", help="Input field name (default: input)"),
-    expected_field: str = typer.Option("expected", "--expected-field", help="Expected field name (default: expected)"),
+    input_field: str = typer.Option(
+        "input", "--input-field", help="Input field name (default: input)"
+    ),
+    expected_field: str = typer.Option(
+        "expected", "--expected-field", help="Expected field name (default: expected)"
+    ),
     push: bool = typer.Option(False, "--push", help="Push to HF Hub after formatting"),
-    repo_id: str | None = typer.Option(None, "--repo-id", help="HF Hub repo ID (e.g., user/dataset)"),
+    repo_id: str | None = typer.Option(
+        None, "--repo-id", help="HF Hub repo ID (e.g., user/dataset)"
+    ),
     split: str = typer.Option("train", "--split", help="Dataset split name"),
     private: bool = typer.Option(False, "--private", help="Create private HF repo"),
 ) -> None:

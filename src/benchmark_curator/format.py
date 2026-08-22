@@ -3,8 +3,6 @@
 import json
 from pathlib import Path
 
-from huggingface_hub import HfApi
-
 
 def export_jsonl(
     records: list[dict],
@@ -14,13 +12,13 @@ def export_jsonl(
 ) -> int:
     """
     Export records to JSONL format.
-    
+
     Args:
         records: List of records with input/expected fields
         output: Output file path
         input_field: Field name for input (default: "input")
         expected_field: Field name for expected output (default: "expected")
-    
+
     Returns:
         Number of records written
     """
@@ -56,14 +54,14 @@ def push_to_hub(
 ) -> str:
     """
     Push records to Hugging Face Hub as a dataset.
-    
+
     Args:
         records: List of records to push
         repo_id: HF Hub repository ID (e.g., "username/dataset-name")
         split: Dataset split name
         token: HF token (or None to use cached)
         private: Whether to create private repo
-    
+
     Returns:
         URL of the created dataset
     """
@@ -72,7 +70,6 @@ def push_to_hub(
     ds = Dataset.from_list(records)
     ds.push_to_hub(repo_id, split=split, token=token, private=private)
 
-    api = HfApi()
     return f"https://huggingface.co/datasets/{repo_id}"
 
 

@@ -1,6 +1,5 @@
 """Tests for benchmark clean module."""
 
-
 from benchmark_curator.clean import (
     _normalize_text,
     _record_hash,
