@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from typing import Any
 
 from datasets import load_dataset
 
@@ -14,7 +15,7 @@ def download_benchmark(
     output: str | None = None,
     config: str | None = None,
     hf_token: str | None = None,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """
     Download a benchmark dataset and return as list of dicts.
 
@@ -51,7 +52,7 @@ def download_benchmark(
         token=hf_token,
     )
 
-    records = ds.to_list()
+    records: list[dict[str, Any]] = ds.to_list()
 
     # Save to output if requested
     if output:

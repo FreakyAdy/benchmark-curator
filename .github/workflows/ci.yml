@@ -37,7 +37,7 @@ jobs:
 
       - name: Run type check
         run: |
-          uv run mypy .
+          uv run mypy --no-site-packages .
 
       - name: Run tests
         run: |

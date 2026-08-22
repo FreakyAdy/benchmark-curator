@@ -77,7 +77,7 @@ def deduplicate_fuzzy(
         return len(a & b) / len(a | b)
 
     result = []
-    signatures = []  # List of (input_ngrams, expected_ngrams)
+    signatures: list[tuple[set[str], set[str]]] = []  # List of (input_ngrams, expected_ngrams)
 
     for record in records:
         input_text = str(record.get(input_field, ""))
