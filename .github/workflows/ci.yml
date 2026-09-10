@@ -28,20 +28,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install -e ".[dev]"
+          uv pip install --system -e ".[dev]"
 
       - name: Run lint
         run: |
-          uv run ruff check .
-          uv run ruff format --check .
+          ruff check .
+          ruff format --check .
 
       - name: Run type check
         run: |
-          uv run mypy --no-site-packages .
+          mypy .
 
       - name: Run tests
         run: |
-          uv run pytest -q --tb=short
+          pytest -q --tb=short
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
@@ -61,8 +61,8 @@ jobs:
 
       - name: Build package
         run: |
-          uv pip install build
-          uv run python -m build
+          uv pip install --system build
+          python -m build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
