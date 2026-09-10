@@ -1,11 +1,15 @@
 """CLI for benchmark-curator."""
 
+import json
+from pathlib import Path
+
 import typer
 from rich.console import Console
 from rich.table import Table
 
 from .clean import clean_pipeline
-from .download import download_benchmark
+from .config import load_config
+from .download import download_benchmark, download_from_file, download_from_url
 from .format import export_jsonl, load_jsonl, push_to_hub
 from .registry import get_benchmark, list_benchmarks
 
@@ -17,6 +21,15 @@ app = typer.Typer(
 )
 
 console = Console()
+
+
+def _save_records(records: list[dict], output: str) -> None:
+    """Save records to a JSONL file."""
+    output_path = Path(output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as f:
+        for record in records:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 @app.command()
@@ -81,7 +94,7 @@ def info(
 @app.command()
 def download(
     benchmark: str = typer.Argument(
-        ..., help="Benchmark name (built-in) or 'file'/'url' for custom"
+        ..., help="Benchmark name (built-in), or local file path, or URL"
     ),
     split: str | None = typer.Option(
         None, "--split", "-s", help="Dataset split (overrides default)"
@@ -92,30 +105,49 @@ def download(
     ),
     hf_token: str | None = typer.Option(None, "--hf-token", help="HF token for private datasets"),
     input_field: str | None = typer.Option(
-        None, "--input-field", help="Input field (for file/url)"
+        None, "--input-field", help="Input field name (for file/url sources)"
     ),
     expected_field: str | None = typer.Option(
-        None, "--expected-field", help="Expected field (for file/url)"
+        None, "--expected-field", help="Expected field name (for file/url sources)"
     ),
 ) -> None:
     """Download a benchmark dataset from HF Hub, local file, or URL."""
-    if benchmark == "file":
+    # Detect if benchmark is a local file path
+    if Path(benchmark).exists():
         if not input_field or not expected_field:
             console.print(
                 "[red]Error: --input-field and --expected-field required for file download[/red]"
             )
             raise typer.Exit(1)
-        # This would need a file path argument - simplified for now
-        console.print("[yellow]File download not fully implemented in this scaffold[/yellow]")
+        console.print(f"Loading from file [cyan]{benchmark}[/cyan]...")
+        try:
+            records = download_from_file(benchmark, input_field, expected_field)
+            console.print(f"[green]✓ Loaded {len(records)} records from file[/green]")
+            if output:
+                _save_records(records, output)
+                console.print(f"  Saved to: {output}")
+        except Exception as e:
+            console.print(f"[red]Error loading file: {e}[/red]")
+            raise typer.Exit(1) from None
         return
 
-    if benchmark == "url":
+    # Detect if benchmark is a URL
+    if benchmark.startswith(("http://", "https://")):
         if not input_field or not expected_field:
             console.print(
                 "[red]Error: --input-field and --expected-field required for URL download[/red]"
             )
             raise typer.Exit(1)
-        console.print("[yellow]URL download not fully implemented in this scaffold[/yellow]")
+        console.print(f"Downloading from URL [cyan]{benchmark}[/cyan]...")
+        try:
+            records = download_from_url(benchmark, input_field, expected_field)
+            console.print(f"[green]✓ Downloaded {len(records)} records from URL[/green]")
+            if output:
+                _save_records(records, output)
+                console.print(f"  Saved to: {output}")
+        except Exception as e:
+            console.print(f"[red]Error downloading from URL: {e}[/red]")
+            raise typer.Exit(1) from None
         return
 
     # Built-in benchmark
@@ -125,11 +157,19 @@ def download(
         console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(1) from None
 
+    # Apply YAML config presets (CLI args take precedence)
+    presets = load_config()
+    preset = presets.get(benchmark)
+    if preset:
+        split = split or preset.split
+        config = config or preset.config
+
     resolved_split = split or bench_config.default_split
     resolved_config = config or bench_config.config
 
     console.print(
-        f"Downloading [cyan]{bench_config.name}[/cyan] (split: {resolved_split}, config: {resolved_config})..."
+        f"Downloading [cyan]{bench_config.name}[/cyan] "
+        f"(split: {resolved_split}, config: {resolved_config})..."
     )
 
     try:
