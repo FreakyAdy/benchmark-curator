@@ -32,8 +32,8 @@ def _save_records(records: list[dict], output: str) -> None:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
-@app.command()
-def list(
+@app.command("list")
+def list_command(
     show_details: bool = typer.Option(False, "--details", "-d", help="Show detailed metadata"),
 ) -> None:
     """List all built-in benchmarks."""
