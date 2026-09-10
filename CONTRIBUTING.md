@@ -8,8 +8,8 @@ Thanks for considering contributing! Here's how to get set up and what we expect
 
 ```bash
 # Clone
-git clone https://github.com/FreakyAdy/week34-benchmark-curator.git
-cd week34-benchmark-curator
+git clone https://github.com/FreakyAdy/benchmark-curator.git
+cd benchmark-curator
 
 # Install with dev dependencies (using pip)
 pip install -e ".[dev]"

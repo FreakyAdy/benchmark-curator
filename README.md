@@ -5,7 +5,7 @@
 
 **Curate your evaluation data before your benchmark breaks.**
 
-[![CI / Quality Gate](https://github.com/FreakyAdy/week34-benchmark-curator/actions/workflows/ci.yml/badge.svg)](https://github.com/FreakyAdy/week34-benchmark-curator/actions)
+[![CI / Quality Gate](https://github.com/FreakyAdy/benchmark-curator/actions/workflows/ci.yml/badge.svg)](https://github.com/FreakyAdy/benchmark-curator/actions)
 [![Tests Passing](https://img.shields.io/badge/tests-83%2F83%20passed%20(100%25)-brightgreen.svg)](tests/)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -184,8 +184,8 @@ Choose the installation method that best fits your workflow:
 
 ```bash
 # Method 1: Install from source (adds `benchmark-curator` to your PATH)
-git clone https://github.com/FreakyAdy/week34-benchmark-curator.git
-cd week34-benchmark-curator
+git clone https://github.com/FreakyAdy/benchmark-curator.git
+cd benchmark-curator
 pip install -e .
 
 # Method 2: Install in development mode with test & linting tools
@@ -374,7 +374,7 @@ jobs:
 
 * **[CONTRIBUTING.md](CONTRIBUTING.md)**: Setup instructions, code formatting rules, and pull request checklist.
 * **[CHANGELOG.md](CHANGELOG.md)**: Release history and upcoming milestones.
-* **[Issue Tracker](https://github.com/FreakyAdy/week34-benchmark-curator/issues)**: Report bugs or request benchmark additions.
+* **[Issue Tracker](https://github.com/FreakyAdy/benchmark-curator/issues)**: Report bugs or request benchmark additions.
 
 ---
 
